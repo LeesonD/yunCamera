@@ -1,0 +1,302 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>插件测试</title>
+    <script src="./jquery-2.1.1.min.js"></script>
+    <script src="./imp.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei','Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        a {
+            display: inline-block;
+            height: 50px;
+            line-height: 50px;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .myBtn {
+            font-size: 16px;
+            background-color: #0094ff;
+            border: 0;
+            text-align: center;
+            padding: 0 10px;
+            margin: 5px;
+            min-width: 80px;
+        }
+
+        .img {
+            width: 300px;
+        }
+
+        .thumb {
+            width: 50px;
+        }
+
+        hr {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div style="width:100%;text-align:center;">
+        <br />
+        <!--关闭窗口-->
+        <div>
+            <a id="btnClose" class="myBtn">关闭窗口</a>
+
+            <a href="http://m.baidu.com" target="_blank" class="myBtn">打开百度</a>
+        </div>
+        <hr />
+        <!--二维码扫描-->
+        <div>
+            <a id="ibarcode" class="myBtn">二维码扫描</a>
+        </div>
+        <hr />
+
+        <!--影像上传-->
+        <div>
+            <h1 id="photoLog" style="color:darkorange;"></h1>
+            <a id="btn_takePhoto" class="myBtn">默认拍照</a>
+            <a id="btn_takePhotoA3" class="myBtn">拍照A3纸</a>
+            <a id="btn_takePhotoA4" class="myBtn">拍照A4纸</a>
+            <a id="btn_takePhoto33" class="myBtn">拍照正方形</a>
+            <a id="btn_selectPhoto" class="myBtn">从相册选择</a>
+        </div>
+        <br />
+        <div id="ui_content"></div>
+        <hr />
+
+        <!--GPS 位置-->
+        <div>
+            <a id="btn_gps" class="myBtn">获取位置（火星坐标）</a>
+            <a id="btn_gpsios" class="myBtn">获取位置（IOS默认坐标）</a>
+            <a id="btn_gps1" class="myBtn">打开GPS</a>
+            <a id="btn_gps2" class="myBtn">关闭GPS</a>
+        </div>
+
+        <hr />
+
+        <!--GPS 位置-->
+        <div>
+            <a id="btn_pic" class="myBtn">拍照</a>
+            <a id="btn_pic1" class="myBtn">相册选择</a>
+        </div>
+        <div id="ui_content1"></div>
+        <div id="ui_content2"></div>
+        <hr />
+
+        <!--短信和电话-->
+        <div>
+            <a id="btn_sms" class="myBtn">打开短信</a>
+            <a id="btn_sms1" class="myBtn">直接发送</a>
+            <a id="btn_tel" class="myBtn">打开拨号</a>
+            <a id="btn_tel1" class="myBtn">直接拨打</a>
+        </div>
+
+    </div>
+</body>
+</html>
+
+<script type="text/javascript">
+    window.onerror = handleErr;
+    var txt = "";
+    function handleErr(msg, url, l) {
+        txt = "There was an error on this page.\n\n";
+        txt += "Error: " + msg + "\n";
+        txt += "URL: " + url + "\n";
+        txt += "Line: " + l + "\n\n";
+        txt += "Click OK to continue.\n\n";
+        alert(txt);
+        return true;
+    }
+
+    //关闭
+    (function () {
+        $("#btnClose").click(function () {
+            imp.iWindow.close();
+        });
+    })();
+
+    ///影像上传
+    (function () {
+
+        var options = {
+            quality: 90, //图片质量
+            resolution: 1080,  //图片最大分辨率
+            encodingType: 0,
+            rectScale: '4:3',
+            context: "gsp", // 自定义的值
+            type: "GSPADPPhoto" //服务器端定义的处理方式
+        }
+        function takePhotoSuccess(data) {
+            // alert(JSON.stringify(data.context));
+            $('#photoLog').html('');
+            var option = $("<img id=\"img0\" class=\"img\" src=\"data:image/jpg;base64," + data.thumbnailData + "\"/>").appendTo($("#ui_content"));
+        }
+
+        function fail(err) {
+            $('#photoLog').html(err);
+        }
+
+
+        $("#btn_takePhoto").click(function () {
+            options.rectScale = '';
+            options.rectScaleList = null;
+            imp.iPhoto.takePhotoAndUpload(options, takePhotoSuccess, fail);
+        });
+
+        $("#btn_takePhoto43").click(function () {
+            options.rectScale = "4:3";
+            imp.iPhoto.takePhotoAndUpload(options, takePhotoSuccess, fail);
+        });
+
+        $("#btn_takePhoto33").click(function () {
+            options.rectScaleList = [{ "name": "正方形", "rectScale": "1:1" }, { "name": "自定义", "rectScale": "custom" }];
+            imp.iPhoto.takePhotoAndUpload(options, takePhotoSuccess, fail);
+        });
+
+        $("#btn_takePhotoA3").click(function () {
+            options.rectScale = "297:420";
+            options.rectScaleList = [{ "name": "A3纸", "rectScale": "297:420" }, { "name": "火车票", "rectScale": "86:54" }, { "name": "自定义", "rectScale": "custom" }];
+            imp.iPhoto.takePhotoAndUpload(options, takePhotoSuccess, fail);
+        });
+
+        $("#btn_takePhotoA4").click(function () {
+            options.rectScale = "210:297";
+            options.rectScaleList = [{ "name": "A4纸", "rectScale": "210:297" }, { "name": "火车票", "rectScale": "86:54" }, { "name": "自定义", "rectScale": "custom" }];
+            imp.iPhoto.takePhotoAndUpload(options, takePhotoSuccess, fail);
+        });
+
+
+
+        function selectSuccess(data) {
+            //  alert(JSON.stringify(data.context));
+            if ($.isArray(data.thumbnailData)) {
+
+            }
+            for (var i = 0; i < data.thumbnailData.length; i++) {
+
+                var container = $("#ui_content");
+                $("<p>" + data.thumbnailData[i].name + "</p>").appendTo(container);
+                var option = $("<img id=\"img" + i + "\" class=\"img\" src=\"data:image/jpg;base64," + data.thumbnailData[i].data + "\"/>").appendTo(container);
+            }
+        }
+
+        $("#btn_selectPhoto").click(function () {
+            imp.iPhoto.selectAndUpload(options, selectSuccess, fail);
+        });
+
+    })();
+
+    //二维码扫描
+    (function () {
+        $("#ibarcode").click(function () {
+            imp.iBarCode.scan(function (result) {
+                alert(result);
+            });
+        });
+
+    })();
+
+    //GPS 位置
+    (function () {
+        //打开GPS定位
+        $("#btn_gps1").click(function () {
+            imp.iGps.open();
+        });
+
+        //关闭GPS定位
+        $("#btn_gps2").click(function () {
+            imp.iGps.close();
+        });
+
+        //获取GPS定位信息
+        $("#btn_gps").click(function () {
+            imp.iGps.getInfo(function (gps) {
+                alert("latitude:" + gps.latitude + ";longitude:" + gps.longitude);
+            });
+
+        });
+
+        //获取IOS原生GPS定位信息
+        $("#btn_gpsios").click(function () {
+            imp.iGps.getInfo(function (gps) {
+                alert("latitude:" + gps.latitude + ";longitude:" + gps.longitude);
+            }, { type: "none" });
+
+        });
+
+    })();
+
+    //拍照
+    (function () {
+
+        var option = {
+            quality: 90, //图片质量
+            encodingType: 0, //图片格式
+            targetWidth: 1024, //0 代表默认值
+            targetHeight: 1900 //0 代表默认值
+        };
+        var success = function (info) {
+            alert(info.thumbnailUrl);
+            alert(info.originalUrl);
+
+            $("<br/><label>缩略图：</label><img  class=\"img thumb\" src=\"data:image/jpg;base64," + info.thumbnailData + "\"/>").appendTo($("#ui_content1"));
+            $("<br/><label>原版图：</label><img  class=\"img\" src=\"data:image/jpg;base64," + info.originalData + "\"/>").appendTo($("#ui_content1"));
+        };
+        var failed = function (info) {
+            alert(info);
+        };
+
+        var success1 = function (info) {
+            for (var i = 0; i < info.length; i++) {
+                //$("<br/><label>缩略图（" + info[i].thumbnailData + "）：</label>").appendTo($("#ui_content1"));
+                //$("<br/><label>原版图（" + info[i].originalData + "）：</label>").appendTo($("#ui_content1"));
+
+                $("<br/><label>缩略图（" + info[i].thumbnailUrl + "）：</label><img  class=\"img thumb\" src=\"data:image/jpg;base64," + info[i].thumbnailData + "\"/>").appendTo($("#ui_content1"));
+                $("<br/><label>原版图（" + info[i].originalUrl + "）：</label><img  class=\"img\" src=\"data:image/jpg;base64," + info[i].originalData + "\"/>").appendTo($("#ui_content1"));
+            }
+        };
+
+        $("#btn_pic").click(function () {
+            imp.iCamera.open(option, success, failed);
+        });
+        $("#btn_pic1").click(function () {
+            imp.iCamera.select(option, success1, failed);
+        });
+
+    })();
+
+    //短信和电话
+    (function () {
+
+        $("#btn_sms").click(function () {
+            imp.iSms.open('114', '测试');
+        });
+
+        $("#btn_sms1").click(function () {
+            imp.iSms.send('114', '测试');
+        });
+
+
+        $("#btn_tel").click(function () {
+            imp.iTel.dial('114');
+        });
+
+        $("#btn_tel1").click(function () {
+            imp.iTel.call('114');
+        });
+
+    })();
+
+</script>
